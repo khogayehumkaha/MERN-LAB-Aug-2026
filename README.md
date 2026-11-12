@@ -1248,13 +1248,12 @@ In pgAdmin, open the **Query Tool** of your database (here `MyDB`) and run:
 
 ```sql
 CREATE TABLE clients (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL,
+    username VARCHAR(100) primary key NOT NULL,
     password VARCHAR(100) NOT NULL
 );
 
--- Insert a client
-INSERT INTO clients (username, password) VALUES ('student', 'student123');
+-- Do not Insert Hardcoded
+> ⚠️ **Important:** Do **not** manually insert a plain-text password via SQL (`INSERT INTO clients VALUES ('student', 'student123')`), because `/login` uses `bcrypt.compare()`, which expects a **bcrypt-hashed password**. Always register users via the **`POST /signup`** endpoint first!
 ```
 
 ## 🧾 Step 2: pgdb.js
@@ -1266,45 +1265,59 @@ Use the **same `pgdb.js` as in Problem 7** (shown there). Make sure `database` m
 ```javascript
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const pool = require("./pgdb");
+
 const app = express();
 app.use(express.json());
 
-const JWT_SECRET = "anytexthere"
-pool.connect(() => { });
+const JWT_SECRET = "anytexthere";
+pool.connect(() => {});
 
+// Signup route
+app.post('/signup', async (req, res) => {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    try {
+        await pool.query('INSERT INTO clients (username, password) VALUES ($1, $2)', [username, hashedPassword]);
+        res.status(201).send("User registered successfully");
+    } catch {
+        res.status(400).send("Username already taken or invalid");
+    }
+});
+
+// Login route
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const result = await pool.query('SELECT * FROM clients WHERE username=$1 AND password=$2', [username, password]);
-    if (result.rows.length == 0) {
+    const result = await pool.query('SELECT * FROM clients WHERE username=$1', [username]);
+    const user = result.rows[0];
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.send("Unauthorized Credentials");
     }
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-    res.send(token);
+
+    res.send(jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' }));
 });
 
-function authorizeMiddleware(req, res, next) {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) {
-        return res.send("Invalid Authorization");
-    }
+// Authentication middleware
+const authorizeMiddleware = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.send("Invalid Authorization");
+
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.send(err);
-        }
+        if (err) return res.send(err);
         req.user = user;
         next();
-    })
-}
+    });
+};
 
+// Protected home route
 app.get("/home", authorizeMiddleware, (req, res) => {
-    res.send({ "message": "Authenticated", "user": req.user });
+    res.send({ message: "Welcome Authenticated User : " +  req.user });
 });
 
-app.listen(3000, () => {
-    console.log("Server running: http://localhost:3000/");
-});
+app.listen(3000, () => console.log("Server running: http://localhost:3000/"));
 ```
 
 ## ▶️ : Run the Server
@@ -1315,122 +1328,157 @@ node 10.WebToken.js
 
 ## 🔗 Endpoints
 
-| Method | URL | Auth | Purpose |
-|--------|-----|------|---------|
-| `POST` | `/login` | none | check username/password, return a JWT |
-| `GET` | `/home` | `Bearer <token>` | protected route – only with a valid token |
+| Method | URL | Auth | Purpose | 
+| ----- | ----- | ----- | ----- | 
+| `POST` | `/signup` | none | Register a new user with a hashed password | 
+| `POST` | `/login` | none | Verify credentials & return a JWT | 
+| `GET` | `/home` | `Bearer <token>` | Protected route – accessible only with a valid token | 
 
 ## 🧪 Test the API Endpoints using Postman
 
-### 1️⃣ Login and get the token
+### 1️⃣ Register a User (`/signup`)
 
-- Method: `POST` &nbsp;·&nbsp; URL: `http://localhost:3000/login`
-- Body → **raw** → **JSON**:
+* **Method:** `POST`  ·  **URL:** `http://localhost:3000/signup`
 
-```json
+* **Body** → **raw** → **JSON**:
+
+```
 {
     "username": "student",
     "password": "student123"
 }
+
 ```
 
-**Response** *(plain text – your token will be different)*
-```text
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0dWRlbnQiLCJpYXQiOjE3NTA1OTkwMDAsImV4cCI6MTc1MDYwMjYwMH0.C_m4_xumwk0BjK51LmKmPHJbCvz4KetKeNSzc6LXBsY
+**Response** — status `201 Created` *(plain text)*
+
+```
+User registered successfully
+
 ```
 
-Wrong username or password → `Unauthorized Credentials`.
+If you send the same username again → `400 Bad Request`: `Username already taken or invalid`.
 
-### 2️⃣ Access the protected route
+### 2️⃣ Login and Get the Token (`/login`)
 
-`/home` is protected, so send the token you got from `/login`.
+* **Method:** `POST`  ·  **URL:** `http://localhost:3000/login`
 
-- Method: `GET` &nbsp;·&nbsp; URL: `http://localhost:3000/home` &nbsp;·&nbsp; Body: not needed
-- In Postman open the **Authorization** tab → **Type: Bearer Token** → paste the token in the **Token** box.
+* **Body** → **raw** → **JSON**:
 
-**Response**
-```json
+```
 {
-    "message": "Authenticated",
-    "user": {
-        "username": "student",
-        "iat": 1764349035,
-        "exp": 1764352635
-    }
+    "username": "student",
+    "password": "student123"
 }
+
+```
+
+**Response** — status `200 OK` *(plain text – your token will be different)*
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0dWRlbnQiLCJpYXQiOjE3NTA1OTkwMDAsImV4cCI6MTc1MDYwMjYwMH0.C_m4_xumwk0BjK51LmKmPHJbCvz4KetKeNSzc6LXBsY
+
+```
+
+Wrong username or password → `401 Unauthorized`: `Unauthorized Credentials`.
+
+### 3️⃣ Access the Protected Route (`/home`)
+
+`/home` is protected, so send the token you received from `/login`.
+
+* **Method:** `GET`  ·  **URL:** `http://localhost:3000/home`  ·  **Body:** not needed
+
+* In Postman, open the **Authorization** tab → **Type: Bearer Token** → paste the token into the **Token** box.
+
+**Response** — status `200 OK`
+
+```
+{
+    "message": "Welcome Authenticated User : student",
+}
+
 ```
 
 ### ❌ What if the token is missing or wrong?
 
-| Request | Response |
-|---------|----------|
-| `GET /home` with no token | `Invalid Authorization` |
-| `GET /home` with a wrong / tampered token | `{"name":"JsonWebTokenError","message":"jwt malformed"}` *(or `invalid signature`)* |
-| `GET /home` with an expired token (after 1 h) | `{"name":"TokenExpiredError", …}` – log in again |
+| Request | Status | Response | 
+| ----- | ----- | ----- | 
+| `GET /home` with no token | `401` | `Invalid Authorization` | 
+| `GET /home` with a wrong / tampered token | `403` | `{"name":"JsonWebTokenError","message":"jwt malformed"}` *(or `invalid signature`)* | 
+| `GET /home` with an expired token (after 1 h) | `403` | `{"name":"TokenExpiredError", …}` – log in again | 
+
 
 ### 💻 Same thing with curl *(Linux / macOS / Git Bash)*
 
-```bash
+```
+# 1. Signup
+curl -X POST http://localhost:3000/signup -H "Content-Type: application/json" -d '{"username":"student","password":"student123"}'
+
+# 2. Login
 curl -X POST http://localhost:3000/login -H "Content-Type: application/json" -d '{"username":"student","password":"student123"}'
+
+# 3. Access protected route
 curl http://localhost:3000/home -H "Authorization: Bearer <paste-token-here>"
+
 ```
 
 ## 💡 How it works
 
-- `jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' })` creates a token that carries the username and expires in one hour. `iat` = issued-at and `exp` = expiry (Unix time).
-- The token has **3 parts** separated by dots: `header.payload.signature`. The signature is made with `JWT_SECRET`, so a changed token fails verification.
-- `authorizeMiddleware` reads the `Authorization: Bearer <token>` header (`split(' ')[1]` takes the part after `Bearer`), runs `jwt.verify`, puts the decoded data in `req.user` and calls `next()`.
+* `bcrypt.hash(password, 10)` hashes the plain-text password with a salt factor of 10 before saving it to PostgreSQL, and `bcrypt.compare()` verifies it during login.
 
-> 🔒 **Lab note:** passwords are stored and compared as plain text, and the secret is hard-coded. Real applications hash passwords (e.g. `bcrypt`) and keep the secret in an environment variable.
+* `jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' })` creates a token carrying the username that expires in one hour (`iat` = issued-at, `exp` = expiry).
 
+* The token has **3 parts** separated by dots: `header.payload.signature`. The signature is made with `JWT_SECRET`, so a changed token fails verification.
 
----
----
+* `authorizeMiddleware` extracts the token from `Authorization: Bearer <token>`, verifies its signature using `jwt.verify`, attaches the decoded payload to `req.user`, and passes control via `next()`.
 
 ## 🛠️ Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| `Cannot find module 'express'` (or `pg`, `mongoose`, `jsonwebtoken`) | Run `npm install express pg mongoose jsonwebtoken` in the project folder |
-| `Error: listen EADDRINUSE :::3000` | Another server is still running – press **Ctrl+C** in its terminal (or close it) and start again |
-| Browser shows old behaviour after editing code | Stop the server and run `node file.js` again |
-| `POST` body arrives empty / `undefined` | In Postman choose **Body → raw → JSON** (not *Text*), and make sure the program has `app.use(express.json())` |
-| `PUT /product` gives `404` | You forgot the id: use `/product/1` |
-| `password authentication failed for user "postgres"` | Fix the password in `pgdb.js` |
-| `relation "users" does not exist` | Create the table in the **same database** named in `pgdb.js` |
-| `MongooseServerSelectionError … ECONNREFUSED` | Start the MongoDB service (`mongod`) first |
-| `Cast to ObjectId failed` | The id in the URL is not a valid MongoDB `_id` – copy it exactly from the create response |
-
----
+| Problem | Fix | 
+| ----- | ----- | 
+| `Cannot find module 'express'` (or `pg`, `mongoose`, `jsonwebtoken`, `bcrypt`) | Run `npm install express pg mongoose jsonwebtoken bcrypt` in the project folder | 
+| `Error: listen EADDRINUSE :::3000` | Another server is still running – press **Ctrl+C** in its terminal (or close it) and start again | 
+| Browser shows old behaviour after editing code | Stop the server and run `node file.js` again | 
+| `POST` body arrives empty / `undefined` | In Postman choose **Body → raw → JSON** (not *Text*), and make sure the program has `app.use(express.json())` | 
+| `PUT /product` gives `404` | You forgot the id: use `/product/1` | 
+| `password authentication failed for user "postgres"` | Fix the password in `pgdb.js` | 
+| `relation "users" does not exist` | Create the table in the **same database** named in `pgdb.js` | 
+| `MongooseServerSelectionError … ECONNREFUSED` | Start the MongoDB service (`mongod`) first | 
+| `Cast to ObjectId failed` | The id in the URL is not a valid MongoDB `_id` – copy it exactly from the create response | 
 
 ## 🎯 Quick Revision
 
 ### HTTP methods ↔ CRUD
 
-| CRUD | Method | Typical URL |
-|------|--------|-------------|
-| **C**reate | `POST` | `/users` |
-| **R**ead | `GET` | `/users` |
-| **U**pdate | `PUT` | `/users/:id` |
-| **D**elete | `DELETE` | `/users/:id` |
+| CRUD | Method | Typical URL | 
+| ----- | ----- | ----- | 
+| **C**reate | `POST` | `/users` | 
+| **R**ead | `GET` | `/users` | 
+| **U**pdate | `PUT` | `/users/:id` | 
+| **D**elete | `DELETE` | `/users/:id` | 
 
 ### Status codes used in this lab
 
-| Code | Meaning | Where |
-|------|---------|-------|
-| `200 OK` | success | most responses |
-| `201 Created` | new resource created | Problem 4 `POST` |
-| `404 Not Found` | unknown URL / file | Problems 1, 2, 3, 4, 9 |
+| Code | Meaning | Where | 
+| ----- | ----- | ----- | 
+| `200 OK` | success | most responses | 
+| `201 Created` | new resource created | Problem 4 `POST`, Problem 10 `/signup` | 
+| `400 Bad Request` | invalid input / duplicate entry | Problem 10 `/signup` | 
+| `401 Unauthorized` | missing or invalid credentials | Problem 10 `/login`, `/home` | 
+| `403 Forbidden` | invalid or expired JWT token | Problem 10 `/home` | 
+| `404 Not Found` | unknown URL / file | Problems 1, 2, 3, 4, 9 | 
 
 ### Storage used in each CRUD program
 
-| Program | Data is stored in | Survives restart? |
-|---------|-------------------|-------------------|
-| 4 | `data.json` file | ✅ |
-| 5 | JavaScript array | ❌ |
-| 6 | `product.json` file | ✅ |
-| 7 | PostgreSQL | ✅ |
-| 8 | MongoDB | ✅ |
+| Program | Data is stored in | Survives restart? | 
+| ----- | ----- | ----- | 
+| 4 | `data.json` file | ✅ | 
+| 5 | JavaScript array | ❌ | 
+| 6 | `product.json` file | ✅ | 
+| 7 | PostgreSQL | ✅ | 
+| 8 | MongoDB | ✅ | 
+| 10 | PostgreSQL (`clients` table) | ✅ | 
+
 
 ---
 
