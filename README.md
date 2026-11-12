@@ -15,7 +15,7 @@
 
 ---
 
-> 💡 **Simpler, optimized codes** are named as  as `ProgramName-Simple.js`.
+> 💡 **Simpler, optimized codes** are named as  `ProgramName-Simple.js`.
 
 ## 📚 Program Index
 
