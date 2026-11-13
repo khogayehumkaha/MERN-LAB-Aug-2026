@@ -12,7 +12,7 @@ app.use('/',(req,res,next)=>{
 });
 
 function middleware1(req,res,next){
-    console.log("Middleware Cought");
+    console.log("Middleware Caught");
     next();
 }
 
