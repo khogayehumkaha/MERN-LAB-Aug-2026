@@ -50,7 +50,7 @@
 ```bash
 mkdir mern-lab && cd mern-lab
 npm init -y
-npm install express pg mongoose jsonwebtoken
+npm install express pg mongoose jsonwebtoken bcrypt
 ```
 
 Programs 1–4 use only Node's built-in modules (`http`, `fs`, `path`), so they need no packages.
