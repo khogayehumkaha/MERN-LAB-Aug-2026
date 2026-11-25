@@ -37,5 +37,5 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 app.listen(3000, () => {
-     console.log(`JSON server running at http://localhost:3000`);
+    console.log(`Server running at http://localhost:3000`);
 });
