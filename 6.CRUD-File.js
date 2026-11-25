@@ -68,9 +68,10 @@ app.delete("/product/:id", (req, res) => {
         return res.send("Item not found");
     }
     data.items.splice(index, 1); 
-    write(data);res.send("Deleted Successfully");
+    write(data);
+    res.send("Deleted Successfully");
 });
 
 app.listen(3000,()=>{
-    console.log("Server started on port 3000");
+     console.log(`JSON server running at http://localhost:3000`);
 });
