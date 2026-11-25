@@ -18,19 +18,19 @@ app.post("/product", (req, res) => {
 // PUT update
 app.put("/product/:id", (req, res) => {
     const index = items.findIndex(i => i.id == req.params.id);
-    if (index < 0) return res.json({ error: "Item not found" });
+    if (index < 0) return res.send("Item not found");
 
     items[index] = { id: Number(req.params.id), ...req.body };
-    res.json({ message: "Updated successfully" });
+    res.send("Updated Successfully");
 });
 
 // DELETE delete
 app.delete("/product/:id", (req, res) => {
     const index = items.findIndex(i => i.id == req.params.id);
-    if (index < 0) return res.json({ error: "Item not found" });
+    if (index < 0) return res.send("Item not found");
 
     items.splice(index, 1);
-    res.json({ message: "Deleted successfully" });
+    res.send("Deleted successfully");
 });
 
 
