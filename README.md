@@ -248,7 +248,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(3000, () => {
-    console.log("Static server running on http://localhost:3000");
+    console.log(`Static server running on http://localhost:3000`);
 })
 ```
 
@@ -357,17 +357,17 @@ const server = http.createServer((req, res) => {
             data.push(item);
             writeData(data);
             res.statusCode = 201;
-            res.end(JSON.stringify({ message: "Item added successfully"}));
+            res.send("Item added successfully");
         });
     }
     else {
         res.statusCode = 404;
-        res.end(JSON.stringify({ error: "Not Found" }));
+        res.send("Not Found");
     }
 });
 
 server.listen(3000, () => {
-    console.log("JSON server running at http://localhost:3000/items");
+    console.log(`JSON server running at http://localhost:3000/items`);
 });
 ```
 

@@ -1,4 +1,10 @@
 {
-  "counter": 1,
-  "items": []
+  "counter": 2,
+  "items": [
+    {
+      "id": 2,
+      "name": "Pen",
+      "price": 10
+    }
+  ]
 }

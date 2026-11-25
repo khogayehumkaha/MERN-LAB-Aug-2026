@@ -4,19 +4,19 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-const file = path.join(__dirname, "product.json");
+const FILE = "product.json";
 counter = 0;
 
 function read() {
-    if (!fs.existsSync(file)) {
+    if (!fs.existsSync(FILE)) {
         return { counter: 0, items: [] };
     }
-    const data = fs.readFileSync(file, "utf8");
+    const data = fs.readFileSync(FILE, "utf8");
     return JSON.parse(data || { counter: 0, items: [] });
 }
 
 function write(data) {
-    fs.writeFileSync(file, JSON.stringify(data));
+    fs.writeFileSync(FILE, JSON.stringify(data));
 }
 
 //CREATE

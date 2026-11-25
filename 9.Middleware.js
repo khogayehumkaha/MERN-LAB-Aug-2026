@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const app = express();
 
-const logFile = path.join(__dirname, "requests.log");
+const logFile = "requests.log";
 
 app.use((req, res, next) => {
     const logMessage = `${req.method} ${req.url}\n`;

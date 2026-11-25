@@ -1,10 +1,19 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const pool = require("./pgdb");
+
+const { Pool } = require("pg");
+const pool = new Pool({
+    user: "postgres",
+    password: "admin",
+    host: "localhost",
+    port: 5432,
+    database: "MyDB",
+});
 
 const app = express();
 app.use(express.json());
+
 const SECRET = "anytexthere";
 
 // Signup
@@ -41,7 +50,9 @@ const auth = (req, res, next) => {
 
 // Protected Home Route
 app.get("/home", auth, (req, res) => {
-    res.send({ message: `Welcome Authenticated User : ${req.user.username}` });
+    res.send(`Welcome Authenticated User : ${req.user.username}`);
 });
 
-app.listen(3000, () => console.log("Server running: http://localhost:3000/"));
+app.listen(3000, () => {
+    console.log(`Server running at http://localhost:3000`);
+});

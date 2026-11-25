@@ -5,9 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "<div align=\"center\">",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -25,5 +24,15 @@
     "nodemon": "^3.1.11",
     "path": "^0.12.7",
     "pg": "^8.16.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khogayehumkaha/MERN-LAB-Aug-2026.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/khogayehumkaha/MERN-LAB-Aug-2026/issues"
+  },
+  "homepage": "https://github.com/khogayehumkaha/MERN-LAB-Aug-2026#readme"
 }
