@@ -9,7 +9,7 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
 ![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 
-**Every program comes with: 📝 Problem · 🧾 Code · ▶️ Run · 🧪 Test (Browser / curl / Postman) · ✅ Expected output · 💡 How it works · 🎓 Viva Q&A**
+**Every program comes with: 📝 Problem · 🧾 Code · ▶️ Run · 🧪 Test (Browser / curl / Postman) · ✅ Expected output · 💡 How it works · 🎓  Q&A**
 
 </div>
 
@@ -31,7 +31,7 @@
 | B | [7](#p7) | CRUD REST API with **PostgreSQL** | `7.CRUD-PSQL.js` + `pgdb.js` | `/users` (GET, POST, PUT, DELETE) | Express, pg, PostgreSQL |
 | B | [8](#p8) | CRUD REST API with **MongoDB** | `8.CRUD-Mongo.js` | `/users` (GET, POST, PUT, DELETE) | Express, mongoose, MongoDB |
 | B | [10](#p10) | **JWT** authentication | `10.WebToken.js` + `pgdb.js` | `POST /signup`, `POST /login`, `GET /home` | Express, jsonwebtoken, bcrypt, pg |
-| – | [🎓](#viva) | **Basic & Program-Specific Viva Q&A** | – | All 10 Programs + MERN Concepts | – |
+| – | [🎓](#Q&A) | **Basic & Program-Specific Q&A** | – | All 10 Programs + MERN Concepts | – |
 
 ---
 
@@ -1464,8 +1464,8 @@ curl http://localhost:3000/home -H "Authorization: Bearer <paste-token-here>"
 ---
 ---
 
-<a id="viva"></a>
-# 🎓 Basic Viva Questions & Answers (MERN Stack & Lab Programs 1–10)
+<a id="QA"></a>
+# 🎓 Basic  Questions & Answers (MERN Stack & Lab Programs 1–10)
 
 ### 📌 Part A: General MERN Stack Concepts
 
@@ -1491,7 +1491,7 @@ curl http://localhost:3000/home -H "Authorization: Bearer <paste-token-here>"
 
 ---
 
-### 📌 Part B: Program-Specific Viva Questions (Programs 1–10)
+### 📌 Part B: Program-Specific  Questions (Programs 1–10)
 
 6. **[Program 1 & 2] What is the difference between `Content-Type: text/plain` and `Content-Type: text/html`?**
    * `text/plain` tells the browser to display raw characters literally (showing tags like `<h1>` as text). `text/html` instructs the browser to parse and render HTML tags visually.
