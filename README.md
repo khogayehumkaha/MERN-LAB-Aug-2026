@@ -9,13 +9,13 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
 ![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 
-**Every program comes with: 📝 Problem · 🧾 Code · ▶️ Run · 🧪 Test (Browser / curl / Postman) · ✅ Expected output · 💡 How it works**
+**Every program comes with: 📝 Problem · 🧾 Code · ▶️ Run · 🧪 Test (Browser / curl / Postman) · ✅ Expected output · 💡 How it works · 🎓 Viva Q&A**
 
 </div>
 
 ---
 
-> 💡 **Simpler, optimized codes** are named as  `ProgramName-Simple.js`.
+> 💡 **Simpler, optimized codes** are named as `ProgramName-Simple.js`.
 
 ## 📚 Program Index
 
@@ -30,7 +30,8 @@
 | B | [6](#p6) | CRUD REST API using a **file** | `6.CRUD-File.js` | `/product` (GET, POST, PUT, DELETE) | Express |
 | B | [7](#p7) | CRUD REST API with **PostgreSQL** | `7.CRUD-PSQL.js` + `pgdb.js` | `/users` (GET, POST, PUT, DELETE) | Express, pg, PostgreSQL |
 | B | [8](#p8) | CRUD REST API with **MongoDB** | `8.CRUD-Mongo.js` | `/users` (GET, POST, PUT, DELETE) | Express, mongoose, MongoDB |
-| B | [10](#p10) | **JWT** authentication | `10.WebToken.js` + `pgdb.js` | `POST /login`, `GET /home` | Express, jsonwebtoken, pg |
+| B | [10](#p10) | **JWT** authentication | `10.WebToken.js` + `pgdb.js` | `POST /signup`, `POST /login`, `GET /home` | Express, jsonwebtoken, bcrypt, pg |
+| – | [🎓](#viva) | **Basic & Program-Specific Viva Q&A** | – | All 10 Programs + MERN Concepts | – |
 
 ---
 
@@ -195,8 +196,8 @@ node 2.HTMLserver.js
 ## 🌐 Access the Server
 
 - [http://localhost:3000/](http://localhost:3000/) → shows a heading and a paragraph
-- [http://localhost:3000/about](http://localhost:3000/about)
-- [http://localhost:3000/invalid](http://localhost:3000/invalid) → `404`
+- [http://localhost:3000/about](http://localhost:3000/about) → `This is the about page.`
+- [http://localhost:3000/invalid](http://localhost:3000/invalid) → `404` (`Page not found`)
 
 ## ✅ Expected Output
 
@@ -249,7 +250,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(3000, () => {
     console.log(`Static server running on http://localhost:3000`);
-})
+});
 ```
 
 ## 🧾 index.html
@@ -330,17 +331,16 @@ Create a Node.js server to read and write JSON objects using files to save the J
 ```javascript
 const http = require("http");
 const fs = require("fs");
-const path = require("path");
 
-const filePath = path.join(__dirname, "data.json");
+const FILE = "data.json";
 
 function readData() {
-    if (!fs.existsSync(filePath)) return [];
-    return JSON.parse(fs.readFileSync(filePath, "utf-8") || "[]");
+    if (!fs.existsSync(FILE)) return [];
+    return JSON.parse(fs.readFileSync(FILE, "utf-8") || "[]");
 }
 
 function writeData(data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
 const server = http.createServer((req, res) => {
@@ -357,17 +357,17 @@ const server = http.createServer((req, res) => {
             data.push(item);
             writeData(data);
             res.statusCode = 201;
-            res.send("Item added successfully");
+            res.end("Item added successfully");
         });
     }
     else {
         res.statusCode = 404;
-        res.send("Not Found");
+        res.end("Issue While Adding Item");
     }
 });
 
 server.listen(3000, () => {
-    console.log(`JSON server running at http://localhost:3000/items`);
+    console.log("Server running at http://localhost:3000/items");
 });
 ```
 
@@ -405,11 +405,9 @@ node 4.JSON-RW.js
 }
 ```
 
-**Response** — status `201 Created`
-```json
-{
-    "message": "Item added successfully"
-}
+**Response** — status `201 Created` *(plain text)*
+```text
+Item added successfully
 ```
 
 ### 3️⃣ Verify
@@ -433,7 +431,7 @@ curl -X POST http://localhost:3000/items -H "Content-Type: application/json" -d 
 curl http://localhost:3000/items
 ```
 
-> Any other URL returns `404` with `{"error":"Not Found"}`.
+> Any other URL or method returns `404` with `Issue While Adding Item`.
 
 ## 💡 How it works
 
@@ -458,7 +456,7 @@ const fs = require("fs");
 const path = require("path");
 const app = express();
 
-const logFile = path.join(__dirname, "requests.log");
+const logFile = "requests.log";
 
 app.use((req, res, next) => {
     const logMessage = `${req.method} ${req.url}\n`;
@@ -485,7 +483,7 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-    console.log("Express server running on http://localhost:3000");
+    console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -547,15 +545,15 @@ Create a REST API using Express.js. The API should support the following CRUD op
 ```javascript
 const express = require("express");
 const app = express();
-app.use(express.json());
+app.use(express.json()); 
 
 let items = [];
-let id_counter = 1;
+let id_counter = 1; 
 
 // CREATE
 app.post("/product", (req, res) => {
     const { name, description, price } = req.body;
-    let newItem = {
+    let newItem = { 
             id    : id_counter++,
             name  : name,
             description : description,
@@ -578,7 +576,7 @@ app.put("/product/:id", (req, res) => {
     if (index === -1) {
         return res.send("Item not found");
     }
-
+    
     items[index] = {
         id   : parseInt(id),
         name : name,
@@ -600,7 +598,7 @@ app.delete("/product/:id", (req, res) => {
 });
 
 app.listen(3000, () => {
-    console.log("Server started on port 3000");
+    console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -736,19 +734,19 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-const file = path.join(__dirname, "product.json");
+const FILE = "product.json";
 counter = 0;
 
 function read() {
-    if (!fs.existsSync(file)) {
+    if (!fs.existsSync(FILE)) {
         return { counter: 0, items: [] };
     }
-    const data = fs.readFileSync(file, "utf8");
-    return JSON.parse(data || { counter: 0, items: [] });
+    const data = fs.readFileSync(FILE, "utf8");
+    return JSON.parse(data || '{"counter":0,"items":[]}');
 }
 
 function write(data) {
-    fs.writeFileSync(file, JSON.stringify(data));
+    fs.writeFileSync(FILE, JSON.stringify(data));
 }
 
 //CREATE
@@ -787,8 +785,8 @@ app.put("/product/:id", (req, res) => {
         description : description,
         price: price,
     };
-    write(data)
-    res.send("Updated Successfully" );
+    write(data);
+    res.send("Updated Successfully");
 });
 
 //DELETE
@@ -799,12 +797,13 @@ app.delete("/product/:id", (req, res) => {
     if (index === -1) {
         return res.send("Item not found");
     }
-    data.items.splice(index, 1);
-    write(data);res.send("Deleted Successfully");
+    data.items.splice(index, 1); 
+    write(data);
+    res.send("Deleted Successfully");
 });
 
-app.listen(3000,()=>{
-    console.log("Server started on port 3000");
+app.listen(3000, () => {
+     console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -883,13 +882,13 @@ CREATE TABLE users (
 ```javascript
 const { Pool } = require('pg');
 const pool = new Pool({
-user: 'postgres',
-password: 'admin',
-host: 'localhost',
-port: '5432',
-database: 'MyDB',
+    user: 'postgres',
+    password: 'admin',
+    host: 'localhost',
+    port: '5432',
+    database: 'MyDB',
 });
-module.exports=pool;
+module.exports = pool;
 ```
 
 > ⚠️ Change `user`, `password` and `database` to match **your** PostgreSQL installation (the password is the one you set while installing PostgreSQL).
@@ -905,9 +904,9 @@ app.use(express.json());
 // CREATE
 app.post("/users", async (req, res) => {
     const { name, email } = req.body;
-    const result = await pool.query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *", [name, email] );
+    const result = await pool.query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *", [name, email]);
     if (result.rows.length === 0) return res.send("Row Not Found");
-    res.send(result.rows);
+    res.send("Row Added");
 });
 
 // READ
@@ -921,21 +920,21 @@ app.get("/users", async (req, res) => {
 app.put("/users/:id", async (req, res) => {
     const id = req.params.id;
     const { name, email } = req.body;
-    const result = await pool.query("UPDATE users SET name=$1, email=$2 WHERE id=$3 RETURNING *", [name, email, id] );
+    const result = await pool.query("UPDATE users SET name=$1, email=$2 WHERE id=$3 RETURNING *", [name, email, id]);
     if (result.rows.length === 0) return res.send("Row Not Found");
-    res.send(result.rows);
+    res.send("Row Updated");
 });
 
 // DELETE
 app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
-    const result = await pool.query("DELETE FROM users WHERE id=$1 RETURNING *",[id]);
+    const result = await pool.query("DELETE FROM users WHERE id=$1 RETURNING *", [id]);
     if (result.rows.length === 0) return res.send("Row Not Found");
-    res.send(result.rows);
+    res.send("Row Deleted");
 });
 
 app.listen(3000, () => {
-    console.log("Server running: http://localhost:3000/users");
+    console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -968,7 +967,16 @@ node 7.CRUD-PSQL.js
 }
 ```
 
-**Response** *(the inserted row, returned by `RETURNING *`)*
+**Response** *(plain text)*
+```text
+Row Added
+```
+
+### 2️⃣ Get All Users
+
+- Method: `GET` &nbsp;·&nbsp; URL: `http://localhost:3000/users` &nbsp;·&nbsp; Body: not needed
+
+**Response** *(list of all rows in the `users` table; if empty, returns `Row Not Found`)*
 ```json
 [
     {
@@ -978,12 +986,6 @@ node 7.CRUD-PSQL.js
     }
 ]
 ```
-
-### 2️⃣ Get All Users
-
-- Method: `GET` &nbsp;·&nbsp; URL: `http://localhost:3000/users` &nbsp;·&nbsp; Body: not needed
-
-**Response:** the list of all rows of the `users` table. If the table is empty, you get `Row Not Found`.
 
 ### 3️⃣ Update User
 
@@ -997,39 +999,29 @@ node 7.CRUD-PSQL.js
 }
 ```
 
-**Response**
-```json
-[
-    {
-        "id": 1,
-        "name": "Vaikunt Pai Nitte",
-        "email": "vaikunt@example.com"
-    }
-]
+**Response** *(plain text)*
+```text
+Row Updated
 ```
+
+*(Calling `GET /users` now shows the updated name and email.)*
 
 ### 4️⃣ Delete User
 
 - Method: `DELETE` &nbsp;·&nbsp; URL: `http://localhost:3000/users/1` &nbsp;*(id of the user to delete)* &nbsp;·&nbsp; Body: not needed
 
-**Response** *(the deleted row)*
-```json
-[
-    {
-        "id": 1,
-        "name": "Vaikunt Pai Nitte",
-        "email": "vaikunt@example.com"
-    }
-]
+**Response** *(plain text)*
+```text
+Row Deleted
 ```
 
-An id that does not exist returns `Row Not Found`.
+An `id` that does not exist returns `Row Not Found`.
 
 ## 💡 How it works
 
-- `pg`'s `Pool` manages the connections; `pool.query(sql, [values])` runs a query.
+- `pg`'s `Pool` manages database connections; `pool.query(sql, [values])` executes SQL queries.
 - `$1, $2, $3` are **parameterized placeholders** – values are passed separately, which protects against SQL injection.
-- `RETURNING *` makes PostgreSQL send back the affected row, so no second query is needed.
+- `RETURNING *` returns the affected rows so `result.rows.length` can confirm whether a row was inserted, updated, or deleted.
 - `email` is `UNIQUE`: inserting the same email twice makes the query fail, so use a different email for each user.
 
 
@@ -1069,22 +1061,19 @@ connectdb();
 
 // Without Schema
 const UserSchema = new mongoose.Schema({}, { strict: false });
-
 const User = mongoose.model("User", UserSchema);
 
 //CREATE
 app.post("/users", async (req, res) => {
     data = req.body;
     result = await User.create(data);
-    console.log(result);
-    res.send({ message: "success", result: result });
+    res.send(result);
 });
 
 //READ
 app.get("/users", async (req, res) => {
     result = await User.find();
-    console.log("success", result);
-    res.send({ message: "success", result: result });
+    res.send(result);
 });
 
 //UPDATE
@@ -1092,23 +1081,20 @@ app.put("/users/:id", async (req, res) => {
     const id = req.params.id;
     const newdata = req.body;
     result = await User.findByIdAndUpdate(id, newdata, { new: true });
-    if (result == null) console.log( "id not found" );
-    console.log(result);
-    res.send({ message: "success", result: result });
+    if (result == null) return res.send("id not found");
+    res.send(result);
 });
 
 //DELETE
 app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
     result = await User.findByIdAndDelete(id);
-    if (result == null) console.log( "id not found" );
-    console.log(result);
-    res.send({ message: "success", result: result });
-    // res.send(result);
+    if (result == null) return res.send("id not found");
+    res.send(result);
 });
 
 app.listen(3000, () => {
-    console.log("Server running: http://localhost:3000/users");
+    console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -1118,7 +1104,7 @@ app.listen(3000, () => {
 node 8.CRUD-Mongo.js
 ```
 
-The terminal prints `Server running: http://localhost:3000/users` and `Connected to mongodb`.
+The terminal prints `Server running at http://localhost:3000` and `Connected to mongodb`.
 
 ## 🔗 Endpoints
 
@@ -1146,13 +1132,10 @@ The terminal prints `Server running: http://localhost:3000/users` and `Connected
 **Response**
 ```json
 {
-    "message": "success",
-    "result": {
-        "name": "Vaikunt Pai",
-        "email": "vaiku@example.com",
-        "_id": "684f0eff17abc4e41f7cc459",
-        "__v": 0
-    }
+    "name": "Vaikunt Pai",
+    "email": "vaiku@example.com",
+    "_id": "684f0eff17abc4e41f7cc459",
+    "__v": 0
 }
 ```
 
@@ -1162,7 +1145,17 @@ The terminal prints `Server running: http://localhost:3000/users` and `Connected
 
 - Method: `GET` &nbsp;·&nbsp; URL: `http://localhost:3000/users` &nbsp;·&nbsp; Body: not needed
 
-**Response:** `{ "message": "success", "result": [ …all users… ] }`
+**Response**
+```json
+[
+    {
+        "_id": "684f0eff17abc4e41f7cc459",
+        "name": "Vaikunt Pai",
+        "email": "vaiku@example.com",
+        "__v": 0
+    }
+]
+```
 
 ### 3️⃣ Update User
 
@@ -1179,13 +1172,10 @@ The terminal prints `Server running: http://localhost:3000/users` and `Connected
 **Response** *(the updated document, because of `{ new: true }`)*
 ```json
 {
-    "message": "success",
-    "result": {
-        "_id": "684f0eff17abc4e41f7cc459",
-        "name": "Vaikunt Pai Nitte",
-        "email": "vaikunt@example.com",
-        "__v": 0
-    }
+    "_id": "684f0eff17abc4e41f7cc459",
+    "name": "Vaikunt Pai Nitte",
+    "email": "vaikunt@example.com",
+    "__v": 0
 }
 ```
 
@@ -1196,22 +1186,21 @@ The terminal prints `Server running: http://localhost:3000/users` and `Connected
 **Response** *(the deleted document)*
 ```json
 {
-    "message": "success",
-    "result": {
-        "_id": "684f0eff17abc4e41f7cc459",
-        "name": "Vaikunt Pai Nitte",
-        "email": "vaikunt@example.com",
-        "__v": 0
-    }
+    "_id": "684f0eff17abc4e41f7cc459",
+    "name": "Vaikunt Pai Nitte",
+    "email": "vaikunt@example.com",
+    "__v": 0
 }
 ```
+
+If the `_id` does not exist in the collection, `PUT` and `DELETE` respond with `id not found`.
 
 ## 💡 How it works
 
 - `mongoose.connect()` opens the connection; `mongoose.model("User", schema)` gives a model with `create`, `find`, `findByIdAndUpdate`, `findByIdAndDelete`.
 - `new mongoose.Schema({}, { strict: false })` is a schema **without fixed fields** – any JSON you send is stored.
 - `{ new: true }` makes `findByIdAndUpdate` return the **updated** document instead of the old one.
-- If the id is not found the result is `null` (the server prints `id not found` in the terminal).
+- If the id is not found the result is `null`, and the server responds with `id not found`.
 
 
 ---
@@ -1233,13 +1222,17 @@ sequenceDiagram
     participant C as Client (Postman)
     participant S as Express Server
     participant D as PostgreSQL
+    C->>S: POST /signup  {username, password}
+    S->>D: INSERT INTO clients (hashed password)
+    D-->>S: row inserted
+    S-->>C: 201 User registered successfully
     C->>S: POST /login  {username, password}
-    S->>D: SELECT * FROM clients WHERE ...
+    S->>D: SELECT * FROM clients WHERE username=$1
     D-->>S: matching row
     S-->>C: JWT token (valid 1 hour)
     C->>S: GET /home  (Authorization: Bearer token)
     S->>S: jwt.verify(token)
-    S-->>C: {"message":"Authenticated","user":{...}}
+    S-->>C: Welcome Authenticated User : <username>
 ```
 
 ## 🗃️ Step 1: PostgreSQL Table Creation
@@ -1248,13 +1241,12 @@ In pgAdmin, open the **Query Tool** of your database (here `MyDB`) and run:
 
 ```sql
 CREATE TABLE clients (
-    username VARCHAR(100) primary key NOT NULL,
+    username VARCHAR(100) PRIMARY KEY NOT NULL,
     password VARCHAR(100) NOT NULL
 );
-
--- Do not Insert Hardcoded
-> ⚠️ **Important:** Do **not** manually insert a plain-text password via SQL (`INSERT INTO clients VALUES ('student', 'student123')`), because `/login` uses `bcrypt.compare()`, which expects a **bcrypt-hashed password**. Always register users via the **`POST /signup`** endpoint first!
 ```
+
+> ⚠️ **Important:** Do **not** manually insert a plain-text password via SQL (`INSERT INTO clients VALUES ('student', 'student123')`), because `/login` uses `bcrypt.compare()`, which expects a **bcrypt-hashed password**. Always register users via the **`POST /signup`** endpoint first!
 
 ## 🧾 Step 2: pgdb.js
 
@@ -1294,7 +1286,7 @@ app.post('/login', async (req, res) => {
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.send("Unauthorized Credentials");
+        return res.status(401).send("Unauthorized Credentials");
     }
 
     res.send(jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' }));
@@ -1303,10 +1295,10 @@ app.post('/login', async (req, res) => {
 // Authentication middleware
 const authorizeMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.send("Invalid Authorization");
+    if (!token) return res.status(401).send("Invalid Authorization");
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.send(err);
+        if (err) return res.status(403).send(err);
         req.user = user;
         next();
     });
@@ -1314,10 +1306,12 @@ const authorizeMiddleware = (req, res, next) => {
 
 // Protected home route
 app.get("/home", authorizeMiddleware, (req, res) => {
-    res.send({ message: "Welcome Authenticated User : " +  req.user.username });
+    res.send("Welcome Authenticated User : " + req.user.username);
 });
 
-app.listen(3000, () => console.log("Server running: http://localhost:3000/"));
+app.listen(3000, () => {
+    console.log(`Server running at http://localhost:3000`);
+});
 ```
 
 ## ▶️ : Run the Server
@@ -1328,56 +1322,50 @@ node 10.WebToken.js
 
 ## 🔗 Endpoints
 
-| Method | URL | Auth | Purpose | 
-| ----- | ----- | ----- | ----- | 
-| `POST` | `/signup` | none | Register a new user with a hashed password | 
-| `POST` | `/login` | none | Verify credentials & return a JWT | 
-| `GET` | `/home` | `Bearer <token>` | Protected route – accessible only with a valid token | 
+| Method | URL | Auth | Purpose |
+| ----- | ----- | ----- | ----- |
+| `POST` | `/signup` | none | Register a new user with a hashed password |
+| `POST` | `/login` | none | Verify credentials & return a JWT |
+| `GET` | `/home` | `Bearer <token>` | Protected route – accessible only with a valid token |
 
 ## 🧪 Test the API Endpoints using Postman
 
 ### 1️⃣ Register a User (`/signup`)
 
-* **Method:** `POST`  ·  **URL:** `http://localhost:3000/signup`
-
+* **Method:** `POST` &nbsp;·&nbsp; **URL:** `http://localhost:3000/signup`
 * **Body** → **raw** → **JSON**:
 
-```
+```json
 {
     "username": "student",
     "password": "student123"
 }
-
 ```
 
 **Response** — status `201 Created` *(plain text)*
 
-```
+```text
 User registered successfully
-
 ```
 
 If you send the same username again → `400 Bad Request`: `Username already taken or invalid`.
 
 ### 2️⃣ Login and Get the Token (`/login`)
 
-* **Method:** `POST`  ·  **URL:** `http://localhost:3000/login`
-
+* **Method:** `POST` &nbsp;·&nbsp; **URL:** `http://localhost:3000/login`
 * **Body** → **raw** → **JSON**:
 
-```
+```json
 {
     "username": "student",
     "password": "student123"
 }
-
 ```
 
 **Response** — status `200 OK` *(plain text – your token will be different)*
 
-```
+```text
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0dWRlbnQiLCJpYXQiOjE3NTA1OTkwMDAsImV4cCI6MTc1MDYwMjYwMH0.C_m4_xumwk0BjK51LmKmPHJbCvz4KetKeNSzc6LXBsY
-
 ```
 
 Wrong username or password → `401 Unauthorized`: `Unauthorized Credentials`.
@@ -1386,31 +1374,26 @@ Wrong username or password → `401 Unauthorized`: `Unauthorized Credentials`.
 
 `/home` is protected, so send the token you received from `/login`.
 
-* **Method:** `GET`  ·  **URL:** `http://localhost:3000/home`  ·  **Body:** not needed
-
+* **Method:** `GET` &nbsp;·&nbsp; **URL:** `http://localhost:3000/home` &nbsp;·&nbsp; **Body:** not needed
 * In Postman, open the **Authorization** tab → **Type: Bearer Token** → paste the token into the **Token** box.
 
-**Response** — status `200 OK`
+**Response** — status `200 OK` *(plain text)*
 
-```
-{
-    "message": "Welcome Authenticated User : student",
-}
-
+```text
+Welcome Authenticated User : student
 ```
 
 ### ❌ What if the token is missing or wrong?
 
-| Request | Status | Response | 
-| ----- | ----- | ----- | 
-| `GET /home` with no token | `401` | `Invalid Authorization` | 
-| `GET /home` with a wrong / tampered token | `403` | `{"name":"JsonWebTokenError","message":"jwt malformed"}` *(or `invalid signature`)* | 
-| `GET /home` with an expired token (after 1 h) | `403` | `{"name":"TokenExpiredError", …}` – log in again | 
-
+| Request | Status | Response |
+| ----- | ----- | ----- |
+| `GET /home` with no token | `401` | `Invalid Authorization` |
+| `GET /home` with a wrong / tampered token | `403` | `{"name":"JsonWebTokenError","message":"jwt malformed"}` *(or `invalid signature`)* |
+| `GET /home` with an expired token (after 1 h) | `403` | `{"name":"TokenExpiredError", …}` – log in again |
 
 ### 💻 Same thing with curl *(Linux / macOS / Git Bash)*
 
-```
+```bash
 # 1. Signup
 curl -X POST http://localhost:3000/signup -H "Content-Type: application/json" -d '{"username":"student","password":"student123"}'
 
@@ -1419,66 +1402,149 @@ curl -X POST http://localhost:3000/login -H "Content-Type: application/json" -d 
 
 # 3. Access protected route
 curl http://localhost:3000/home -H "Authorization: Bearer <paste-token-here>"
-
 ```
 
 ## 💡 How it works
 
 * `bcrypt.hash(password, 10)` hashes the plain-text password with a salt factor of 10 before saving it to PostgreSQL, and `bcrypt.compare()` verifies it during login.
-
 * `jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' })` creates a token carrying the username that expires in one hour (`iat` = issued-at, `exp` = expiry).
-
 * The token has **3 parts** separated by dots: `header.payload.signature`. The signature is made with `JWT_SECRET`, so a changed token fails verification.
-
 * `authorizeMiddleware` extracts the token from `Authorization: Bearer <token>`, verifies its signature using `jwt.verify`, attaches the decoded payload to `req.user`, and passes control via `next()`.
+
+---
+---
 
 ## 🛠️ Troubleshooting
 
-| Problem | Fix | 
-| ----- | ----- | 
-| `Cannot find module 'express'` (or `pg`, `mongoose`, `jsonwebtoken`, `bcrypt`) | Run `npm install express pg mongoose jsonwebtoken bcrypt` in the project folder | 
-| `Error: listen EADDRINUSE :::3000` | Another server is still running – press **Ctrl+C** in its terminal (or close it) and start again | 
-| Browser shows old behaviour after editing code | Stop the server and run `node file.js` again | 
-| `POST` body arrives empty / `undefined` | In Postman choose **Body → raw → JSON** (not *Text*), and make sure the program has `app.use(express.json())` | 
-| `PUT /product` gives `404` | You forgot the id: use `/product/1` | 
-| `password authentication failed for user "postgres"` | Fix the password in `pgdb.js` | 
-| `relation "users" does not exist` | Create the table in the **same database** named in `pgdb.js` | 
-| `MongooseServerSelectionError … ECONNREFUSED` | Start the MongoDB service (`mongod`) first | 
-| `Cast to ObjectId failed` | The id in the URL is not a valid MongoDB `_id` – copy it exactly from the create response | 
+| Problem | Fix |
+| ----- | ----- |
+| `Cannot find module 'express'` (or `pg`, `mongoose`, `jsonwebtoken`, `bcrypt`) | Run `npm install express pg mongoose jsonwebtoken bcrypt` in the project folder |
+| `Error: listen EADDRINUSE :::3000` | Another server is still running – press **Ctrl+C** in its terminal (or close it) and start again |
+| Browser shows old behaviour after editing code | Stop the server and run `node file.js` again |
+| `POST` body arrives empty / `undefined` | In Postman choose **Body → raw → JSON** (not *Text*), and make sure the program has `app.use(express.json())` |
+| `PUT /product` gives `404` | You forgot the id: use `/product/1` |
+| `password authentication failed for user "postgres"` | Fix the password in `pgdb.js` |
+| `relation "users" does not exist` | Create the table in the **same database** named in `pgdb.js` |
+| `MongooseServerSelectionError … ECONNREFUSED` | Start the MongoDB service (`mongod`) first |
+| `Cast to ObjectId failed` | The id in the URL is not a valid MongoDB `_id` – copy it exactly from the create response |
 
 ## 🎯 Quick Revision
 
 ### HTTP methods ↔ CRUD
 
-| CRUD | Method | Typical URL | 
-| ----- | ----- | ----- | 
-| **C**reate | `POST` | `/users` | 
-| **R**ead | `GET` | `/users` | 
-| **U**pdate | `PUT` | `/users/:id` | 
-| **D**elete | `DELETE` | `/users/:id` | 
+| CRUD | Method | Typical URL |
+| ----- | ----- | ----- |
+| **C**reate | `POST` | `/users` |
+| **R**ead | `GET` | `/users` |
+| **U**pdate | `PUT` | `/users/:id` |
+| **D**elete | `DELETE` | `/users/:id` |
 
 ### Status codes used in this lab
 
-| Code | Meaning | Where | 
-| ----- | ----- | ----- | 
-| `200 OK` | success | most responses | 
-| `201 Created` | new resource created | Problem 4 `POST`, Problem 10 `/signup` | 
-| `400 Bad Request` | invalid input / duplicate entry | Problem 10 `/signup` | 
-| `401 Unauthorized` | missing or invalid credentials | Problem 10 `/login`, `/home` | 
-| `403 Forbidden` | invalid or expired JWT token | Problem 10 `/home` | 
-| `404 Not Found` | unknown URL / file | Problems 1, 2, 3, 4, 9 | 
+| Code | Meaning | Where |
+| ----- | ----- | ----- |
+| `200 OK` | success | most responses |
+| `201 Created` | new resource created | Problem 4 `POST`, Problem 10 `/signup` |
+| `400 Bad Request` | invalid input / duplicate entry | Problem 10 `/signup` |
+| `401 Unauthorized` | missing or invalid credentials | Problem 10 `/login`, `/home` |
+| `403 Forbidden` | invalid or expired JWT token | Problem 10 `/home` |
+| `404 Not Found` | unknown URL / file | Problems 1, 2, 3, 4, 9 |
 
 ### Storage used in each CRUD program
 
-| Program | Data is stored in | Survives restart? | 
-| ----- | ----- | ----- | 
-| 4 | `data.json` file | ✅ | 
-| 5 | JavaScript array | ❌ | 
-| 6 | `product.json` file | ✅ | 
-| 7 | PostgreSQL | ✅ | 
-| 8 | MongoDB | ✅ | 
-| 10 | PostgreSQL (`clients` table) | ✅ | 
+| Program | Data is stored in | Survives restart? |
+| ----- | ----- | ----- |
+| 4 | `data.json` file | ✅ |
+| 5 | JavaScript array | ❌ |
+| 6 | `product.json` file | ✅ |
+| 7 | PostgreSQL (`users` table) | ✅ |
+| 8 | MongoDB (`TestDB`) | ✅ |
+| 10 | PostgreSQL (`clients` table) | ✅ |
 
+---
+---
+
+<a id="viva"></a>
+# 🎓 Basic Viva Questions & Answers (MERN Stack & Lab Programs 1–10)
+
+### 📌 Part A: General MERN Stack Concepts
+
+1. **What does MERN stand for, and what is the role of each technology?**
+   * **M – MongoDB:** NoSQL document-oriented database that stores data in JSON-like (BSON) documents.
+   * **E – Express.js:** Lightweight backend web framework for Node.js used to build REST APIs, routing, and middleware.
+   * **R – React.js:** Frontend JavaScript library for building component-based user interfaces.
+   * **N – Node.js:** Server-side JavaScript runtime environment built on Chrome's V8 engine.
+
+2. **Why is Node.js single-threaded yet able to handle thousands of concurrent requests?**
+   * Node.js uses an **event-driven, non-blocking I/O model** powered by the **Event Loop** and `libuv`. Time-consuming tasks (file reads, database queries) are offloaded to the OS kernel/worker pool while the main thread continues handling incoming requests.
+
+3. **What is the difference between `require()` (CommonJS) and `import` (ES Modules)?**
+   * `require()` is synchronous and used in CommonJS (default in Node.js scripts), whereas `import` is asynchronous, statically analyzed, and part of ES6 modules (`"type": "module"` in `package.json`).
+
+4. **What is a REST API, and how do HTTP methods map to CRUD operations?**
+   * REST (Representational State Transfer) is a stateless client-server architectural style over HTTP.
+   * **Create** → `POST`, **Read** → `GET`, **Update** → `PUT` (full update) / `PATCH` (partial update), **Delete** → `DELETE`.
+
+5. **What is the difference between SQL (PostgreSQL) and NoSQL (MongoDB)?**
+   * **PostgreSQL** is a relational database storing structured data in tables with fixed schemas, rows, and columns.
+   * **MongoDB** is a non-relational document database storing flexible, schema-less JSON/BSON documents inside collections.
+
+---
+
+### 📌 Part B: Program-Specific Viva Questions (Programs 1–10)
+
+6. **[Program 1 & 2] What is the difference between `Content-Type: text/plain` and `Content-Type: text/html`?**
+   * `text/plain` tells the browser to display raw characters literally (showing tags like `<h1>` as text). `text/html` instructs the browser to parse and render HTML tags visually.
+
+7. **[Program 2] What is the difference between `res.write()` and `res.end()`?**
+   * `res.write()` sends a chunk of the response body while keeping the stream open for additional data; `res.end()` signals that the response is complete and closes the connection.
+
+8. **[Program 3] Why do we need MIME types (`mimeTypes` object) when serving static files?**
+   * Browsers rely on the `Content-Type` HTTP header (e.g., `text/css`, `application/javascript`) rather than just the file extension to know whether to apply CSS rules or execute JavaScript.
+
+9. **[Program 4] Why do we read `POST` data using `req.on("data")` and `req.on("end")` in core Node.js?**
+   * In Node's built-in `http` module, `req` is a **Readable Stream**. Request bodies arrive in chunks over the network, so we concatenate chunks on `"data"` and parse the complete payload once `"end"` fires.
+
+10. **[Program 5] Why is `app.use(express.json())` required in Express POST and PUT routes?**
+    * Express does not parse incoming JSON request bodies by default. `express.json()` is built-in middleware that parses JSON payloads and attaches the resulting object to `req.body`.
+
+11. **[Program 5 vs. 6] What is the limitation of storing data in an array (Program 5) vs. a JSON file (Program 6)?**
+    * An array lives in volatile RAM—all data is lost when the server stops or restarts. Writing to `product.json` persists data on disk across server restarts.
+
+12. **[Program 7] Why do we use `$1, $2` placeholders in PostgreSQL queries (`pool.query`) instead of string concatenation?**
+    * Parameterized queries prevent **SQL Injection** attacks by separating SQL logic from user-supplied data and automatically escaping values.
+
+13. **[Program 7] What does `RETURNING *` do in PostgreSQL `INSERT`, `UPDATE`, and `DELETE` queries?**
+    * By default, `INSERT`/`UPDATE`/`DELETE` only return a row count. Adding `RETURNING *` makes PostgreSQL return the affected row(s) immediately so `result.rows.length` can confirm whether a row was modified.
+
+14. **[Program 8] What does `{ strict: false }` do in `new mongoose.Schema({}, { strict: false })`?**
+    * By default, Mongoose ignores fields not defined in the schema. Setting `strict: false` allows documents with any arbitrary JSON fields to be saved into MongoDB.
+
+15. **[Program 8] Why is `{ new: true }` passed to `User.findByIdAndUpdate()`?**
+    * Without `{ new: true }`, Mongoose returns the document *before* the update was applied. Passing `{ new: true }` returns the freshly updated document.
+
+16. **[Program 9] What is middleware in Express.js, and what happens if you forget to call `next()`?**
+    * Middleware is a function with access to `(req, res, next)` that runs during the request-response cycle (e.g., logging, authentication). If `next()` is neither called nor a response sent (`res.send()`), the request hangs indefinitely and times out.
+
+17. **[Program 9] What is the difference between global (application-level) middleware and route-level middleware?**
+    * Global middleware (`app.use(...)`) executes for every incoming request across all routes, whereas route-level middleware (`app.get("/about", aboutMiddleware, ...)`) executes only when that specific route is matched.
+
+18. **[Program 10] What are the three parts of a JWT (JSON Web Token)?**
+    * `Header.Payload.Signature` separated by dots:
+      1. **Header:** Token type (`JWT`) and signing algorithm (`HS256`).
+      2. **Payload:** User claims/data (e.g., `username`, `iat`, `exp`).
+      3. **Signature:** Cryptographic hash created using the header, payload, and `JWT_SECRET` to detect tampering.
+
+19. **[Program 10] Why do we hash passwords using `bcrypt` before storing them in PostgreSQL?**
+    * Plain-text passwords expose user accounts if the database is breached. `bcrypt.hash(password, 10)` applies a one-way cryptographic hash with 10 salt rounds, and `bcrypt.compare()` verifies login attempts safely.
+
+20. **[HTTP Status Codes] What do `200`, `201`, `400`, `401`, `403`, and `404` signify?**
+    * `200 OK`: Request succeeded.
+    * `201 Created`: New resource created (`POST`).
+    * `400 Bad Request`: Malformed syntax or duplicate/invalid input.
+    * `401 Unauthorized`: Authentication missing or invalid login credentials.
+    * `403 Forbidden`: Token invalid or expired.
+    * `404 Not Found`: Requested route or resource does not exist.
 
 ---
 
