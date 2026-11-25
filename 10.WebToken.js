@@ -49,7 +49,9 @@ const authorizeMiddleware = (req, res, next) => {
 
 // Protected home route
 app.get("/home", authorizeMiddleware, (req, res) => {
-    res.send({ message: "Welcome Authenticated User : " +  req.user.username });
+    res.send("Welcome Authenticated User : " +  req.user.username);
 });
 
-app.listen(3000, () => console.log("Server running: http://localhost:3000/"));
+app.listen(3000, () => {
+    console.log(`Server running at http://localhost:3000`);
+});
