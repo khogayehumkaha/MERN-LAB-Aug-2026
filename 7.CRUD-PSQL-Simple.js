@@ -15,7 +15,7 @@ app.post("/users", async (req, res) => {
 // READ
 app.get("/users", async (req, res) => {
     const result = await pool.query("SELECT * FROM users");
-    sendResult(res, result);
+    res.send(result.rows);
 });
 
 // UPDATE
@@ -23,21 +23,17 @@ app.put("/users/:id", async (req, res) => {
     const id = req.params.id;
     const { name, email } = req.body;
     const result = await pool.query("UPDATE users SET name=$1, email=$2 WHERE id=$3 RETURNING *", [name, email, id] );
-    sendResult(res, result);
+    res.send(result.rows);
 });
 
 // DELETE
 app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
     const result = await pool.query("DELETE FROM users WHERE id=$1 RETURNING *",[id]);
-    sendResult(res, result);
+    res.send(result.rows);
 });
 
-function sendResult(res, result) {
-    if (result.rows.length === 0) return res.send("Row Not Found");
-    res.send(result.rows);
-}
 
 app.listen(3000, () => {
-    console.log("Server running: http://localhost:3000/users");
+      console.log(`JSON server running at http://localhost:3000`);
 });
