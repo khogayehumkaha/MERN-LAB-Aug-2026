@@ -359,7 +359,7 @@ const server = http.createServer((req, res) => {
     }
     else {
         res.statusCode = 404;
-        res.end("Issue While Adding Item");
+        res.end("Error PAGE NOT FOUND");
     }
 });
 
