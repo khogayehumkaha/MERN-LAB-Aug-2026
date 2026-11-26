@@ -715,7 +715,7 @@ const FILE = "products.json";
 
 function read() {
     if (fs.existsSync(FILE)) {
-        return JSON.parse(fs.readFileSync(FILE, "utf8"));
+        return JSON.parse(fs.readFileSync(FILE, "utf-8") || "[]");
     } else {
         return { counter: 0, items: [] };
     }
@@ -734,7 +734,7 @@ app.post("/product", (req, res) => {
     res.json(new_item);
 });
 
-// READ ALL
+// DISPLAY ALL
 app.get("/product", (req, res) => {
     res.json(read().items);
 });
@@ -1018,42 +1018,35 @@ async function connectdb() {
 }
 connectdb();
 
-// Without Schema
-const UserSchema = new mongoose.Schema({}, { strict: false });
-const User = mongoose.model("User", UserSchema);
+// Schema (Flexible)
+const User = mongoose.model("User", new mongoose.Schema({}, { strict: false }));
 
-//CREATE
+// CREATE
 app.post("/users", async (req, res) => {
-    data = req.body;
-    result = await User.create(data);
+    const result = await User.create(req.body);
     res.send(result);
 });
 
-//READ
+// READ
 app.get("/users", async (req, res) => {
-    result = await User.find();
+    const result = await User.find();
     res.send(result);
 });
 
-//UPDATE
+// UPDATE
 app.put("/users/:id", async (req, res) => {
-    const id = req.params.id;
-    const newdata = req.body;
-    result = await User.findByIdAndUpdate(id, newdata, { new: true });
-    if (result == null) return res.send("id not found");
+    const result = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.send(result);
 });
 
-//DELETE
+// DELETE
 app.delete("/users/:id", async (req, res) => {
-    const id = req.params.id;
-    result = await User.findByIdAndDelete(id);
-    if (result == null) return res.send("id not found");
+    const result = await User.findByIdAndDelete(req.params.id);
     res.send(result);
 });
 
 app.listen(3000, () => {
-    console.log(`Server running at http://localhost:3000`);
+      console.log(`Server running at http://localhost:3000`);
 });
 ```
 
@@ -1223,7 +1216,6 @@ const app = express();
 app.use(express.json());
 
 const JWT_SECRET = "anytexthere";
-pool.connect(() => {});
 
 // Signup route
 app.post('/signup', async (req, res) => {
@@ -1245,7 +1237,7 @@ app.post('/login', async (req, res) => {
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).send("Unauthorized Credentials");
+        return res.send("Unauthorized Credentials");
     }
 
     res.send(jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' }));
@@ -1254,10 +1246,10 @@ app.post('/login', async (req, res) => {
 // Authentication middleware
 const authorizeMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).send("Invalid Authorization");
+    if (!token) return res.send("Invalid Authorization");
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).send(err);
+        if (err) return res.send(err);
         req.user = user;
         next();
     });
@@ -1265,7 +1257,7 @@ const authorizeMiddleware = (req, res, next) => {
 
 // Protected home route
 app.get("/home", authorizeMiddleware, (req, res) => {
-    res.send("Welcome Authenticated User : " + req.user.username);
+    res.send("Welcome Authenticated User : " +  req.user.username);
 });
 
 app.listen(3000, () => {
