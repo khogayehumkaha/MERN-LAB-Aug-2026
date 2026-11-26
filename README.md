@@ -260,7 +260,7 @@ server.listen(3000, () => {
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello from index.html used by File Server</h1>
+  <h1>Hello from index.html </h1>
   <script src="script.js"></script>
 </body>
 </html>
@@ -271,7 +271,7 @@ server.listen(3000, () => {
 ```css
 body {
     background-color: orange;
-    font-family: sans-serif;
+    font-family: Arial;
   }
 ```
 
