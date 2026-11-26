@@ -20,10 +20,10 @@ function write(data) {
 // CREATE
 app.post("/product", (req, res) => {
     const data = read();
-    const item = { id: ++data.counter, ...req.body };
-    data.items.push(item);
+    const new_item = { id: ++data.counter, ...req.body };
+    data.items.push(new_item);
     write(data);
-    res.json(item);
+    res.json(new_item);
 });
 
 // READ ALL
