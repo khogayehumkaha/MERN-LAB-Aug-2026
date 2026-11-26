@@ -175,10 +175,10 @@ const server = http.createServer((req, res) => {
         res.end();
     } else if (req.url === "/about") {
         res.statusCode = 200;
-        res.end("This is the about page.");
+        res.end("<h1>This is the about page.</h1>");
     } else {
         res.statusCode = 404;
-        res.end("Page not found");
+        res.end("<h1>Page not found</h1>");
     }
 });
 
