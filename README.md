@@ -542,56 +542,37 @@ Create a REST API using Express.js. The API should support the following CRUD op
 ```javascript
 const express = require("express");
 const app = express();
-app.use(express.json()); 
+app.use(express.json());
 
 let items = [];
-let id_counter = 1; 
+let id = 1;
 
-// CREATE
+// GET all
+app.get("/product", (req, res) => res.json(items));
+
+// POST add
 app.post("/product", (req, res) => {
-    const { name, description, price } = req.body;
-    let newItem = { 
-            id    : id_counter++,
-            name  : name,
-            description : description,
-            price : price,
-    };
-    items.push(newItem);
-    res.send(newItem);
+    const new_item = { id: id++, ...req.body };
+    items.push(new_item);
+    res.json(new_item);
 });
 
-// READ
-app.get("/product", (req, res) => {
-    res.json(items);
-});
-
-// UPDATE
+// PUT update
 app.put("/product/:id", (req, res) => {
-    const { id } = req.params;
-    const { name, description, price } = req.body;
-    const index = items.findIndex((item) => item.id === parseInt(id));
-    if (index === -1) {
-        return res.send("Item not found");
-    }
-    
-    items[index] = {
-        id   : parseInt(id),
-        name : name,
-        description : description,
-        price: price,
-    };
+    const index = items.findIndex(i => i.id == req.params.id);
+    if (index < 0) return res.send("Item not found");
+
+    items[index] = { id: Number(req.params.id), ...req.body };
     res.send("Updated Successfully");
 });
 
-// DELETE
+// DELETE delete
 app.delete("/product/:id", (req, res) => {
-    const { id } = req.params;
-    const index = items.findIndex((item) => item.id === parseInt(id));
-    if (index === -1) {
-        return res.send("Item not found");
-    }
+    const index = items.findIndex(i => i.id == req.params.id);
+    if (index < 0) return res.send("Item not found");
+
     items.splice(index, 1);
-    res.send("Deleted Successfully");
+    res.send("Deleted successfully");
 });
 
 app.listen(3000, () => {
