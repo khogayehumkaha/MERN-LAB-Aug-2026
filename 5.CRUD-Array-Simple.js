@@ -10,9 +10,9 @@ app.get("/product", (req, res) => res.json(items));
 
 // POST add
 app.post("/product", (req, res) => {
-    const item = { id: id++, ...req.body };
-    items.push(item);
-    res.json(item);
+    const new_item = { id: id++, ...req.body };
+    items.push(new_item);
+    res.json(new_item);
 });
 
 // PUT update
