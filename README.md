@@ -224,32 +224,29 @@ Create a Node.js server that serves static files (HTML, CSS, JS) from the curren
 //(Place files: index.html, style.css, script.js in same folder)
 
 const http = require("http");
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
-const mimeTypes = {
-    ".html": "text/html",
-    ".css": "text/css",
-    ".js": "application/javascript"
+const mimes = { 
+    ".html": "text/html", 
+    ".css": "text/css", 
+    ".js": "text/javascript" 
 };
 
-const server = http.createServer((req, res) => {
-    let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
-    let ext = path.extname(filePath);
-    let contentType = mimeTypes[ext] || "text/plain";
-
-    fs.readFile(filePath, (err, data) => {
-        if (err) {
-            res.writeHead(404, { "Content-Type": "text/plain" });
-            return res.end("404 File Not Found");
-        }
-        res.writeHead(200, { "Content-Type": contentType });
+const server = http.createServer(async (req, res) => {
+    const file = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
+    try {
+        const data = await fs.readFile(file);
+        res.writeHead(200, { "Content-Type": mimes[path.extname(file)] || "text/plain" });
         res.end(data);
-    });
+    } catch {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("404 File Not Found");
+    }
 });
 
 server.listen(3000, () => {
-    console.log(`Static server running on http://localhost:3000`);
+    console.log(`Server running on http://localhost:3000`);
 });
 ```
 
