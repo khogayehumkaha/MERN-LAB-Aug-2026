@@ -708,80 +708,61 @@ Create a REST API using Express.js. The API should support the above (as in Q.no
 ```javascript
 const express = require("express");
 const fs = require("fs");
-const path = require("path");
 const app = express();
 app.use(express.json());
 
-const FILE = "product.json";
-counter = 0;
+const FILE = "products.json";
 
 function read() {
-    if (!fs.existsSync(FILE)) {
+    if (fs.existsSync(FILE)) {
+        return JSON.parse(fs.readFileSync(FILE, "utf8"));
+    } else {
         return { counter: 0, items: [] };
     }
-    const data = fs.readFileSync(FILE, "utf8");
-    return JSON.parse(data || '{"counter":0,"items":[]}');
 }
 
 function write(data) {
-    fs.writeFileSync(FILE, JSON.stringify(data));
+    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
-//CREATE
+// CREATE
 app.post("/product", (req, res) => {
-    const { name, description, price } = req.body;
-    let data = read();
-    let newProduct = {
-        id: ++data.counter,
-        name: name,
-        description : description,
-        price: price,
-    };
-    data.items.push(newProduct);
+    const data = read();
+    const new_item = { id: ++data.counter, ...req.body };
+    data.items.push(new_item);
     write(data);
-    res.send(newProduct);
+    res.json(new_item);
 });
 
-//READ
+// READ ALL
 app.get("/product", (req, res) => {
-    data = read();
-    res.send(data.items);
+    res.json(read().items);
 });
 
-//UPDATE
+// UPDATE
 app.put("/product/:id", (req, res) => {
-    const { id } = req.params;
-    let { name, description, price } = req.body;
-    let data = read();
-    const index = data.items.findIndex((item) => item.id === parseInt(id));
-    if (index == -1) {
-        return res.send("Item not found");
-    }
-    data.items[index] = {
-        id: parseInt(id),
-        name: name,
-        description : description,
-        price: price,
-    };
+    const data = read();
+    const index = data.items.findIndex(i => i.id == req.params.id);
+    if (index < 0) return res.send("Item not found");
+
+    data.items[index] = { id: Number(req.params.id), ...req.body };
     write(data);
     res.send("Updated Successfully");
 });
 
-//DELETE
+// DELETE
 app.delete("/product/:id", (req, res) => {
-    const { id } = req.params;
-    let data = read();
-    const index = data.items.findIndex((item) => item.id === parseInt(id));
-    if (index === -1) {
-        return res.send("Item not found");
-    }
-    data.items.splice(index, 1); 
+    const data = read();
+    const index = data.items.findIndex(i => i.id == req.params.id);
+    if (index < 0) return res.send("Item not found");
+
+    data.items.splice(index, 1);
     write(data);
-    res.send("Deleted Successfully");
+     res.send("Deleted Successfully");
 });
 
-app.listen(3000, () => {
-     console.log(`Server running at http://localhost:3000`);
+app.listen(3000,()=>{
+    console.log(`Server running at http://localhost:3000`);
 });
 ```
 
