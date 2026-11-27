@@ -15,4 +15,3 @@ CREATE TABLE clients (
   password varchar(50) not null
 );
 
-INSERT INTO clients (username, password) VALUES ('student', 'student123');
