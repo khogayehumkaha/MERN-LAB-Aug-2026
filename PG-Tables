@@ -15,3 +15,7 @@ CREATE TABLE clients (
   password varchar(50) not null
 );
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5b47ac595354a10ea8c1e4e749b162a33cafff35
