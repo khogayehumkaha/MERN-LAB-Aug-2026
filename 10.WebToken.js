@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 
 const JWT_SECRET = "anytexthere";
-pool.connect(() => {});
 
 // Signup route
 app.post('/signup', async (req, res) => {
