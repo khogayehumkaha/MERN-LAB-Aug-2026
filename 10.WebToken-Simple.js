@@ -1,3 +1,4 @@
+// no external db.js     all in one  
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
